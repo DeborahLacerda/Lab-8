@@ -91,7 +91,7 @@ namespace Lab_8
 
             tableh2.Text = "Has Enrolled in thee following couses";
             tableh2.Visible = true;
-
+            StudentDropdown.Disabled = true;
             //para cada curso c em cursoselecionados
             Table1.Visible = true;
             foreach (Course c in selectedCourses)
