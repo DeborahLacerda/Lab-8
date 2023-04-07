@@ -27,9 +27,23 @@ namespace Lab_8
                 LoadAvailableCourses();
                 title1.Text = "Following Course are currently availible for registration";
                 title1.Visible = true;
+                StudentCoursesInfo.Visible = false;
 
-                return;
+
+                string selectedStudentId = Request.QueryString["studentId"];
+                if (!string.IsNullOrWhiteSpace(selectedStudentId))
+                {
+                    StudentDropdown.SelectedValue = selectedStudentId;
+                    Student selectedStudent = Students.FirstOrDefault(s => s.Id.ToString() == selectedStudentId);
+                    if (selectedStudent != null)
+                    {
+                        LoadSelectedCourses(selectedStudent);
+                    }
+
+                }
+
             }
+
         }
 
 
@@ -37,7 +51,7 @@ namespace Lab_8
         {
 
             // Check if student is provided
-            string selectedStudentId = StudentDropdown.Value;
+            string selectedStudentId = StudentDropdown.SelectedValue;
             if (string.IsNullOrWhiteSpace(selectedStudentId))
 
             {
@@ -45,7 +59,7 @@ namespace Lab_8
                 return;
             }
             // Check if type course is provided
-           
+
             // Check if course is provided
             string courses = CoursesCheckBoxList.SelectedValue;
             if (string.IsNullOrWhiteSpace(courses))
@@ -53,7 +67,6 @@ namespace Lab_8
                 ShowErrorMessage("You must select a one course!");
                 return;
             }
-
 
 
             // Validate registration rules based on course type
@@ -67,7 +80,6 @@ namespace Lab_8
                 if (item.Selected)
                 {
                     selectedCourses.Add(Helper.GetCourseByCode(item.Value));
-
                 }
             }
 
@@ -76,66 +88,40 @@ namespace Lab_8
                 selectedStudent.RegisterCourses(selectedCourses);
                 ShowSelectedCourses(selectedCourses);
             }
-            catch (Exception Ex) 
-            { 
+            catch (Exception Ex)
+            {
                 ShowErrorMessage(Ex.Message);
-                
             }
         }
-
+        private void ShowStudentCoursesInfo(Student student)
+        {
+            if (student.RegisteredCourses.Count > 0)
+            {
+                int totalHours = student.RegisteredCourses.Sum(c => c.WeeklyHours);
+                StudentCoursesInfo.Text = $"Student has enrolled in {student.RegisteredCourses.Count} courses with a total of {totalHours} weekly hours.";
+                StudentCoursesInfo.Visible = true;
+            }
+            else
+            {
+                StudentCoursesInfo.Visible = false;
+            }
+        }
         private void ShowSelectedCourses(List<Course> selectedCourses)
         {
             //Clean
             ErrorLabel.Text = "";
             ErrorLabel.Visible = false;
-
-            tableh2.Text = "Has Enrolled in thee following couses";
-            tableh2.Visible = true;
-            StudentDropdown.Disabled = true;
-            //para cada curso c em cursoselecionados
-            Table1.Visible = true;
-            foreach (Course c in selectedCourses)
-            {
-                // Create registration table row
-                TableRow row = new TableRow();
-                TableCell codeCell = new TableCell();
-                TableCell coursesCell = new TableCell();
-                TableCell hoursCell = new TableCell();
-
-
-                codeCell.Controls.Add(new LiteralControl(c.Code));
-                coursesCell.Controls.Add(new LiteralControl(c.Title));
-                hoursCell.Controls.Add(new LiteralControl(c.WeeklyHours.ToString()));
-                row.Cells.Add(codeCell);
-                row.Cells.Add(coursesCell);
-                row.Cells.Add(hoursCell);
-
-
-                Table1.Rows.Add(row);
-            }
+            title1.Visible = true;
+            StudentCoursesInfo.Visible = false;
 
             // Calculate total hours
             int totalSelectedHours = selectedCourses.Sum(c => c.WeeklyHours);
-
-            // Add total hours row to table
-            TableRow totalRow = new TableRow();
-            Table1.Rows.Add(totalRow);
-
-            TableCell totalCell = new TableCell();
-            totalCell.Text = "Total Hours";
-            totalCell.ColumnSpan = 2;
-            totalCell.HorizontalAlign = HorizontalAlign.Right;
-            totalRow.Cells.Add(totalCell);
-
-            TableCell totalHoursCell = new TableCell();
-            totalHoursCell.Text = totalSelectedHours.ToString();
-            totalRow.Cells.Add(totalHoursCell);
-
-
-            title1.Visible = false;
-            CoursesCheckBoxList.Visible = false;
-            cmdOK.Visible = false;
-            Table1.Visible = true;
+            string selectedStudentId = StudentDropdown.SelectedValue;
+            Student selectedStudent = Students.FirstOrDefault(s => s.Id.ToString() == selectedStudentId);
+            if (selectedStudent != null)
+            {
+                ShowStudentCoursesInfo(selectedStudent);
+            }
         }
 
         private void LoadAvailableCourses()
@@ -149,28 +135,51 @@ namespace Lab_8
             CoursesCheckBoxList.DataBind();
         }
 
-        // Get Total Weekly Hours
-        public static int GetTotalWeeklyHours(CheckBoxList coursesCheckBoxList)
+        protected void LoadSelectedCourses(Student student)
         {
-            int totalHours = 0;
-            foreach (ListItem item in coursesCheckBoxList.Items)
+            if (student.RegisteredCourses.Count == 0)
             {
-                if (item.Selected)
-                {
-                    totalHours += Helper.GetCourseByCode(item.Value).WeeklyHours;
-                }
+                CoursesCheckBoxList.ClearSelection();
+                title1.Visible = true;
+                StudentCoursesInfo.Visible = false;
             }
-            return totalHours;
+            else
+            {
+                foreach (ListItem item in CoursesCheckBoxList.Items)
+                {
+                    item.Selected = student.RegisteredCourses.Any(c => c.Code == item.Value);
+                }
+                title1.Visible = true;
+            }
+            ShowStudentCoursesInfo(student);
         }
-        //Show Error Message
+
+        protected void StudentDropdown_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            string selectedStudentId = StudentDropdown.SelectedValue;
+            if (string.IsNullOrWhiteSpace(selectedStudentId))
+            {
+                ShowErrorMessage("You must select a student!");
+                CoursesCheckBoxList.ClearSelection();
+                title1.Visible = true;
+                StudentCoursesInfo.Visible = false;
+                return;
+            }
+
+            Student selectedStudent = Students.FirstOrDefault(s => s.Id.ToString() == selectedStudentId);
+            if (selectedStudent != null)
+            {
+                LoadSelectedCourses(selectedStudent);
+            }
+        }
+
+
+        // Show Error Message
         private void ShowErrorMessage(string message)
         {
             ErrorLabel.Text = message;
             ErrorLabel.Visible = true;
-
         }
-
-
 
         private void PopulateStudentDropdown()
         {
@@ -180,6 +189,5 @@ namespace Lab_8
                 StudentDropdown.Items.Add(item);
             }
         }
-
     }
 }

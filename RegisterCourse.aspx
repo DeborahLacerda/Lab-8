@@ -14,10 +14,13 @@
                 <h1 class="text-center text-success">Registrations</h1>
                 <br />
                 <label for="StudentDropdown">Student:</label>
-                <select id="StudentDropdown" runat="server" class="btn btn-success dropdown-toggle">
-                    <option value="">-- Select a student --</option>
-                </select>
+                <asp:DropDownList ID="StudentDropdown" runat="server" class="btn btn-success dropdown-toggle" AutoPostBack="true" OnTextChanged="StudentDropdown_SelectedIndexChanged">
+                    <asp:ListItem  Text="Select..." Value=""></asp:ListItem>
+
+                </asp:DropDownList>
+
                 <br />
+                <asp:Label ID="StudentCoursesInfo" runat="server" Visible="false" CssClass="text-info" />
 
                 <asp:Label class="text-danger fs-5" ID="Label2" runat="server" Visible="false" />
                 <span id="StudentError" class="text-danger" style="display: none;">Please select a student.</span>
@@ -34,26 +37,14 @@
 
                 </h4>
 
-                <asp:CheckBoxList ID="CoursesCheckBoxList" runat="server" Visible="true" />
+                <asp:CheckBoxList ID="CoursesCheckBoxList" runat="server" AutoPostBack="true" OnCheckedChanged="CtrlChanged" />
             </div>
             <br />
 
             <asp:Button ID="cmdOK" Text="Save" runat="server" class="btn btn-outline-success" OnClick="SubmitButton_Click" Visible="true" />
 
-            <div>
-                <h2>
-                    <asp:Label ID="tableh2" runat="server" Visible="false" /></h2>
-
-                <asp:Table ID="Table1" runat="server" CssClass="table table-hover" Visible="false">
-                    <asp:TableHeaderRow>
-                        <asp:TableHeaderCell Scope="Column" Text="Course Code"></asp:TableHeaderCell>
-                        <asp:TableHeaderCell Scope="Column" Text="Course Title"></asp:TableHeaderCell>
-                        <asp:TableHeaderCell Scope="Column" Text="Weekly Hours"></asp:TableHeaderCell>
-                    </asp:TableHeaderRow>
-                </asp:Table>
-            </div>
         </form>
-          <br />
+        <br />
         <div class="d-grid gap-2 col-6 mx-auto">
             <a href="AddStudent.aspx" class="btn btn-secondary ">Add Student</a>
         </div>
@@ -63,4 +54,3 @@
 
 </body>
 </html>
-
